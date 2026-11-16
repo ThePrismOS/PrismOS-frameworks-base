@@ -786,7 +786,16 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                     final boolean commitVisibility = !checkEnterPipOnFinish(ar);
                     // Avoid commit visibility if entering pip or else we will get a sudden
                     // "flash" / surface going invisible for a split second.
-                    if (commitVisibility) {
+                    // PrismOS: a tagged spatial window must survive the transition with its
+                    // surfaces intact — it stays alive and rendered in the world-space scene
+                    // while another activity is on the 2D top. Its lifecycle still sees the
+                    // pause/stop sequence through the normal visibility computation; here we
+                    // only prevent the surface hide that would remove it from the scene.
+                    if (commitVisibility && PrismWindowPolicy.keepsSurfaceWhenOccluded(ar,
+                            ar.getTask())) {
+                        ProtoLog.v(ProtoLogGroup.WM_DEBUG_WINDOW_TRANSITIONS,
+                                "  PrismOS keep surfaces through transition: %s", ar);
+                    } else if (commitVisibility) {
                         ProtoLog.v(ProtoLogGroup.WM_DEBUG_WINDOW_TRANSITIONS,
                                 "  Commit activity becoming invisible: %s", ar);
                         final Task task = ar.getTask();
