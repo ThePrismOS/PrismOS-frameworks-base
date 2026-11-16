@@ -225,6 +225,7 @@ import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.vr.VrManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
+import com.android.server.wm.PrismWindowPolicy;
 import com.android.server.wm.DisplayPolicy;
 import com.android.server.wm.DisplayRotation;
 import com.android.server.wm.WindowManagerInternal;
@@ -3255,6 +3256,15 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         final long key_not_consumed = 0;
         final boolean longPress = (flags & KeyEvent.FLAG_LONG_PRESS) != 0;
         final boolean virtualKey = event.getDeviceId() == KeyCharacterMap.VIRTUAL_KEYBOARD;
+
+        // PrismOS: the trigger key performs a spatial tap on the window under the gaze
+        // while the spatial scene is active; the key is consumed so media sessions
+        // do not react to it.
+        if (keyCode == KeyEvent.KEYCODE_HEADSETHOOK && down && !canceled && repeatCount == 0
+                && PrismWindowPolicy.spatialWindowingActive()) {
+            mWindowManagerInternal.prismosGazeTap();
+            return key_consumed;
+        }
 
         if (DEBUG_INPUT) {
             Log.d(TAG, "interceptKeyTi keyCode=" + keyCode + " down=" + down + " repeatCount="
