@@ -1022,6 +1022,16 @@ public class WindowManagerService extends IWindowManager.Stub
     private boolean mIsIgnoreOrientationRequestDisabled;
 
     final InputManagerService mInputManager;
+    // PrismOS spatial input: gaze ray -> focus + tap injection (see PrismInputManager).
+    private PrismInputManager mPrismInputManager;
+
+    /** PrismOS: lazily created spatial input manager. */
+    public PrismInputManager getPrismInputManager() {
+        if (mPrismInputManager == null) {
+            mPrismInputManager = new PrismInputManager(this);
+        }
+        return mPrismInputManager;
+    }
     final DisplayManagerInternal mDisplayManagerInternal;
     final DisplayManager mDisplayManager;
     final ActivityTaskManagerService mAtmService;
@@ -7772,6 +7782,10 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     private final class LocalService extends WindowManagerInternal {
+        @Override
+        public void prismosGazeTap() {
+            getPrismInputManager().onGazeTap();
+        }
 
         @Override
         public AccessibilityControllerInternal getAccessibilityController() {

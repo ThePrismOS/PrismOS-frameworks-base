@@ -884,4 +884,10 @@ public abstract class WindowManagerInternal {
      * could not be prepared and the session needs to be torn down.
      */
     public abstract boolean setContentRecordingSession(ContentRecordingSession incomingSession);
+
+    /**
+     * PrismOS: perform a spatial tap on the window the gaze ray currently points at.
+     * Consumed by the policy on the trigger key while the spatial scene is active.
+     */
+    public void prismosGazeTap() {}
 }

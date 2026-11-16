@@ -75,6 +75,20 @@ final class PrismWindowPolicy {
     }
 
     /**
+     * PrismOS: stable placement identity of a spatial window — a hash of the activity
+     * component name. Unlike an identity hash code it survives surface recreation, app
+     * switches and system_server restarts, which keeps each Spatial Window bound to its
+     * Android Task and lets the renderer restore its world placement for the whole
+     * session. Distinct for two windows of one app (split screen uses two activities).
+     */
+    static int stablePlacementId(ActivityRecord activity) {
+        if (activity == null || activity.info == null || activity.info.getComponentName() == null) {
+            return 0;
+        }
+        return activity.info.getComponentName().flattenToString().hashCode();
+    }
+
+    /**
      * True when the activity's window is tagged as a spatial window.
      */
     static boolean isSpatialActivity(ActivityRecord activity) {
@@ -96,8 +110,10 @@ final class PrismWindowPolicy {
      * behavior, and the focused activity still owns input and lifecycle.
      */
     static boolean keepsSurfaceWhenOccluded(ActivityRecord activity, Task task) {
-        return spatialWindowingActive() && task != null && task.inMultiWindowMode()
-                && !task.inPinnedWindowingMode() && isSpatialActivity(activity);
+        // Horizon-style persistence: a tagged window keeps its surface in every
+        // windowing mode — the scene renders it at its world placement while the 2D
+        // stack shows whatever is in front. Only the spatial gate applies.
+        return spatialWindowingActive() && isSpatialActivity(activity);
     }
 
     /**

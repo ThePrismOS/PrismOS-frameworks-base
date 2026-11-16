@@ -5598,17 +5598,18 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         // truth for the tagging rules is PrismWindowPolicy — container layers, starting
         // windows, sub-windows and system bars stay flat; attached dialogs composite over
         // their own activity in the world-space scene. Metadata 10000 = "is a spatial
-        // window"; 10001 = stable placement identity (the ActivityRecord identityHashCode
-        // survives surface recreation, whose layer names change with a "#<sequence>"
-        // suffix). Explicitly cleared when the window is not spatial so no stale id
-        // survives a retag.
+        // window"; 10001 = stable placement identity — a hash of the activity component
+        // name, which survives surface recreation (layer names change with a
+        // "#<sequence>" suffix), app switches and system_server restarts, keeping each
+        // Spatial Window bound to its Android Task across the whole session. Explicitly
+        // cleared when the window is not spatial so no stale id survives a retag.
         final SurfaceControl prismBufferSurface = mWinAnimator.getSurfaceControl();
         if (prismBufferSurface != null && prismBufferSurface.isValid()) {
             final boolean prismSpatial = PrismWindowPolicy.isSpatialWindow(this);
             getSyncTransaction().setMetadata(prismBufferSurface, 10000, prismSpatial ? 1 : 0);
             getSyncTransaction().setMetadata(prismBufferSurface, 10001,
                     prismSpatial && mActivityRecord != null
-                            ? System.identityHashCode(mActivityRecord) : 0);
+                            ? PrismWindowPolicy.stablePlacementId(mActivityRecord) : 0);
         }
         mIsDimming = false;
         applyDims();
