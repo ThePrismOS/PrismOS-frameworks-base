@@ -106,6 +106,10 @@ public final class SurfaceControl implements Parcelable {
     private static native void nativeWriteToParcel(long nativeObject, Parcel out);
     private static native void nativeRelease(long nativeObject);
     private static native void nativeDisconnect(long nativeObject);
+    // PrismOS: gaze ray cast against the spatial windows. Returns the hit window tag or
+    // null when the ray hits nothing; outUV (length >= 2) receives normalized in-window
+    // coordinates (u right, v down).
+    private static native String nativeGetPrismGazeHit(float[] outUV);
     private static native void nativeUpdateDefaultBufferSize(long nativeObject, int width, int height);
     private static native int nativeCaptureDisplay(DisplayCaptureArgs captureArgs,
             ScreenCaptureListener captureListener);
@@ -2709,7 +2713,17 @@ public final class SurfaceControl implements Parcelable {
      *[
      * @hide
      */
-    public static void setGlobalShadowSettings(@Size(4) float[] ambientColor,
+    /**
+     * PrismOS: gaze ray cast against the spatial windows. Returns the hit window tag or
+     * null when the ray hits nothing; outUV (length >= 2) receives the normalized
+     * in-window coordinates (u right, v down). Must be called from the system process.
+     */
+    public static @Nullable String getPrismGazeHit(@NonNull float[] outUV) {
+        return nativeGetPrismGazeHit(outUV);
+    }
+
+    public static void setGlobalShadowSettings(@NonNull @Size(4) float[] ambientColor,
+            @NonNull @Size(4) float[] spotColor, float lightPosY, float lightPosZ, float lightRadius) {
             @Size(4) float[] spotColor, float lightPosY, float lightPosZ, float lightRadius) {
         validateColorArg(ambientColor);
         validateColorArg(spotColor);
