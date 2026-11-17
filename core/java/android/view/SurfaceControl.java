@@ -2724,7 +2724,6 @@ public final class SurfaceControl implements Parcelable {
 
     public static void setGlobalShadowSettings(@NonNull @Size(4) float[] ambientColor,
             @NonNull @Size(4) float[] spotColor, float lightPosY, float lightPosZ, float lightRadius) {
-            @Size(4) float[] spotColor, float lightPosY, float lightPosZ, float lightRadius) {
         validateColorArg(ambientColor);
         validateColorArg(spotColor);
         nativeSetGlobalShadowSettings(ambientColor, spotColor, lightPosY, lightPosZ, lightRadius);
