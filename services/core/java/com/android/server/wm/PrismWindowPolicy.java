@@ -36,7 +36,7 @@ import android.view.WindowManager.LayoutParams;
  *
  * Everything is property-gated so the stock 2D pipeline remains a reboot away.
  */
-final class PrismWindowPolicy {
+public final class PrismWindowPolicy {
 
     private static final String PROP_STEREO = "debug.prismos.stereo";
     private static final String PROP_SCENE = "debug.prismos.3d";
@@ -45,7 +45,7 @@ final class PrismWindowPolicy {
     private PrismWindowPolicy() {}
 
     /** True when the world-space window scene is currently switched on. */
-    static boolean spatialWindowingActive() {
+    public static boolean spatialWindowingActive() {
         return SystemProperties.getBoolean(PROP_STEREO, false)
                 && SystemProperties.getBoolean(PROP_SCENE, false)
                 && SystemProperties.getBoolean(PROP_SPATIAL, false);

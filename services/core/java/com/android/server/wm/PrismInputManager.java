@@ -69,7 +69,7 @@ final class PrismInputManager {
         }
 
         final WindowState[] hit = new WindowState[1];
-        mService.mRootWindowContainer.forAllWindows(win -> {
+        mService.mRoot.forAllWindows(win -> {
             if (hit[0] != null) {
                 return;
             }
@@ -79,7 +79,7 @@ final class PrismInputManager {
             if (!tag.isEmpty() && hitTag.startsWith(tag)) {
                 hit[0] = win;
             }
-        });
+        }, true /* traverseTopToBottom */);
         final WindowState win = hit[0];
         if (win == null || win.mActivityRecord == null) {
             Slog.d(TAG, "gaze tap: hit '" + hitTag + "' resolved to no live window");
