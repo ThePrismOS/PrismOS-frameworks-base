@@ -5442,16 +5442,25 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
             return;
         }
 
+        // PrismOS: a tagged spatial window keeps its surfaces committed-visible while the
+        // scene is active — the compositor renders it at its world placement even when the
+        // 2D stack moves another activity to the front. The activity still commits its
+        // logical state (pause/stop through the task focus), only the surface-hide
+        // propagation to the windows is suppressed. Finishing activities hide normally.
+        final boolean prismKeepSurfaces = !visible && !mFinishing
+                && PrismWindowPolicy.keepsSurfaceWhenOccluded(this, getTask());
         final int windowsCount = mChildren.size();
         // With Shell-Transition, the activity will running a transition when it is visible.
         // It won't be included when fromTransition is true means the call from finishTransition.
         final boolean runningAnimation = sEnableShellTransitions ? visible
                 : isAnimating(PARENTS, ANIMATION_TYPE_APP_TRANSITION);
-        for (int i = 0; i < windowsCount; i++) {
-            mChildren.get(i).onAppVisibilityChanged(visible, runningAnimation);
+        if (!prismKeepSurfaces) {
+            for (int i = 0; i < windowsCount; i++) {
+                mChildren.get(i).onAppVisibilityChanged(visible, runningAnimation);
+            }
         }
-        setVisible(visible);
-        setVisibleRequested(visible);
+        setVisible(visible || prismKeepSurfaces);
+        setVisibleRequested(visible || prismKeepSurfaces);
         ProtoLog.v(WM_DEBUG_APP_TRANSITIONS, "commitVisibility: %s: visible=%b"
                         + " visibleRequested=%b, isInTransition=%b, runningAnimation=%b, caller=%s",
                 this, isVisible(), mVisibleRequested, isInTransition(), runningAnimation,
