@@ -5447,7 +5447,7 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
         // 2D stack moves another activity to the front. The activity still commits its
         // logical state (pause/stop through the task focus), only the surface-hide
         // propagation to the windows is suppressed. Finishing activities hide normally.
-        final boolean prismKeepSurfaces = !visible && !mFinishing
+        final boolean prismKeepSurfaces = !visible && !isFinishing()
                 && PrismWindowPolicy.keepsSurfaceWhenOccluded(this, getTask());
         final int windowsCount = mChildren.size();
         // With Shell-Transition, the activity will running a transition when it is visible.
@@ -6000,6 +6000,18 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
     }
 
     void makeInvisible() {
+        // PrismOS: a tagged spatial window stays committed-visible while the scene is
+        // active — the client keeps its surface and the scene keeps rendering it at its
+        // world placement even when another activity covers it on the 2D stack. Hiding
+        // the client would stop the activity and destroy the surface (Horizon-style
+        // persistence). Screen-off and finishing activities hide normally.
+        if (PrismWindowPolicy.keepsSurfaceWhenOccluded(this, getTask()) && !isSleeping()
+                && !isFinishing()) {
+            if (DEBUG_VISIBILITY) {
+                Slog.v(TAG_VISIBILITY, "PrismOS keep visible: " + this);
+            }
+            return;
+        }
         if (!mVisibleRequested) {
             if (DEBUG_VISIBILITY) Slog.v(TAG_VISIBILITY, "Already invisible: " + this);
             return;
