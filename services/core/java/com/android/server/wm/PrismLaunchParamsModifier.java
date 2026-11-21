@@ -21,6 +21,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 
 import android.annotation.Nullable;
+import android.graphics.Rect;
 import android.app.ActivityOptions;
 import android.content.pm.ActivityInfo.WindowLayout;
 
@@ -58,6 +59,13 @@ final class PrismLaunchParamsModifier
             return RESULT_CONTINUE;
         }
 
+        // PrismOS tablet format: spatial tasks launch with a landscape tablet buffer so
+        // applications render their tablet layout inside the world-space window.
+        if (phase == PHASE_BOUNDS && PrismWindowPolicy.spatialWindowingActive()
+                && (outParams.mBounds == null || outParams.mBounds.isEmpty())) {
+            outParams.mBounds.set(0, 0, 1800, 1125);
+            return RESULT_CONTINUE;
+        }
         // Apply freeform only when no windowing mode was requested.
         if (outParams.mWindowingMode == WINDOWING_MODE_UNDEFINED) {
             outParams.mWindowingMode = WINDOWING_MODE_FREEFORM;

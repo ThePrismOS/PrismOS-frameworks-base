@@ -727,6 +727,12 @@
       "group": "WM_DEBUG_STATES",
       "at": "com\/android\/server\/wm\/ActivityRecord.java"
     },
+    "-1427832352": {
+      "message": "  PrismOS keep surfaces through transition: %s",
+      "level": "VERBOSE",
+      "group": "WM_DEBUG_WINDOW_TRANSITIONS",
+      "at": "com\/android\/server\/wm\/Transition.java"
+    },
     "-1427184084": {
       "message": "addWindow: New client %s: window=%s Callers=%s",
       "level": "VERBOSE",

@@ -62,6 +62,12 @@ public final class PrismWindowPolicy {
             return false;
         }
         final LayoutParams attrs = win.mAttrs;
+        // PrismOS: transient system dialogs (screenshot flash, screen-recorder toast) must
+        // not occupy a world slot — they are momentary 2D overlays, skipped from tagging.
+        if (attrs.packageName != null && attrs.packageName.equals("com.android.systemui")
+                && attrs.type == LayoutParams.TYPE_APPLICATION_OVERLAY) {
+            return false;
+        }
         final boolean isMainApplicationSurface =
                 attrs.type >= LayoutParams.FIRST_APPLICATION_WINDOW
                         && attrs.type <= LayoutParams.LAST_APPLICATION_WINDOW

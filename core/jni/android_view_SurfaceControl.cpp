@@ -580,6 +580,24 @@ static void nativeSetEarlyWakeupEnd(JNIEnv* env, jclass clazz, jlong transaction
     transaction->setEarlyWakeupEnd();
 }
 
+// PrismOS: gaze ray cast against the spatial windows. Returns the hit window tag
+// (or null when the ray hits nothing); outUV receives the normalized in-window
+// coordinates (u right, v down).
+static jstring nativeGetPrismGazeHit(JNIEnv* env, jclass clazz, jfloatArray outUV) {
+    bool valid = false;
+    std::string name;
+    float u = 0.5f, v = 0.5f;
+    status_t err = SurfaceComposerClient::getPrismGazeHit(&valid, &name, &u, &v);
+    if (err != NO_ERROR || !valid) {
+        return nullptr;
+    }
+    if (outUV != nullptr && env->GetArrayLength(outUV) >= 2) {
+        jfloat uv[2] = {u, v};
+        env->SetFloatArrayRegion(outUV, 0, 2, uv);
+    }
+    return env->NewStringUTF(name.c_str());
+}
+
 static jlong nativeGetTransactionId(JNIEnv* env, jclass clazz, jlong transactionObj) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
     return transaction->getId();
@@ -2110,6 +2128,8 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
             (void*)nativeSetEarlyWakeupEnd },
     {"nativeGetTransactionId", "(J)J",
                 (void*)nativeGetTransactionId },
+    {"nativeGetPrismGazeHit", "([F)Ljava/lang/String;",
+            (void*)nativeGetPrismGazeHit },
     {"nativeSetLayer", "(JJI)V",
             (void*)nativeSetLayer },
     {"nativeSetRelativeLayer", "(JJJI)V",
