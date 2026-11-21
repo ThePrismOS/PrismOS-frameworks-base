@@ -55,6 +55,18 @@ import static android.content.Intent.CATEGORY_LAUNCHER;
 import static android.content.Intent.CATEGORY_SECONDARY_HOME;
 import static android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
 import static android.content.Intent.FLAG_ACTIVITY_NO_HISTORY;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_USER;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
 import static android.content.pm.ActivityInfo.CONFIG_ORIENTATION;
 import static android.content.pm.ActivityInfo.CONFIG_SCREEN_LAYOUT;
 import static android.content.pm.ActivityInfo.CONFIG_SCREEN_SIZE;
@@ -7976,7 +7988,29 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
      */
     @Override
     protected int getOverrideOrientation() {
-        return mLetterboxUiController.overrideOrientationIfNeeded(super.getOverrideOrientation());
+        // PrismOS: the spatial scene presents every application as a landscape world-space
+        // window — portrait requests are overridden system-wide at the single choke point
+        // all orientation paths funnel through. Landscape requests pass unchanged.
+        final int requested = super.getOverrideOrientation();
+        if (PrismWindowPolicy.spatialWindowingActive()) {
+            switch (requested) {
+                case SCREEN_ORIENTATION_PORTRAIT:
+                case SCREEN_ORIENTATION_REVERSE_PORTRAIT:
+                case SCREEN_ORIENTATION_SENSOR_PORTRAIT:
+                case SCREEN_ORIENTATION_USER_PORTRAIT:
+                case SCREEN_ORIENTATION_SENSOR:
+                case SCREEN_ORIENTATION_FULL_SENSOR:
+                case SCREEN_ORIENTATION_FULL_USER:
+                case SCREEN_ORIENTATION_USER:
+                case SCREEN_ORIENTATION_NOSENSOR:
+                case SCREEN_ORIENTATION_LOCKED:
+                case SCREEN_ORIENTATION_UNSPECIFIED:
+                    return ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+                default:
+                    break;
+            }
+        }
+        return mLetterboxUiController.overrideOrientationIfNeeded(requested);
     }
 
     /**
