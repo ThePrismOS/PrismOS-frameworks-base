@@ -72,6 +72,9 @@ import android.util.proto.ProtoOutputStream;
 import android.view.DisplayAddress;
 import android.view.IWindowManager;
 import android.view.Surface;
+
+// PrismOS spatial window policy (forced landscape while the scene is active).
+import com.android.server.wm.PrismWindowPolicy;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerTransaction;
 
@@ -1191,6 +1194,23 @@ public class DisplayRotation {
 
         if (isFixedToUserRotation()) {
             return mUserRotation;
+        }
+
+        // PrismOS: force landscape for the whole system while the spatial scene is active.
+        // The wearer's eyes see a landscape-mounted panel; a portrait flat stack would show
+        // sideways windows and portrait buffers in the spatial scene. This override ignores
+        // per-app portrait requests (games etc. keep working — only the display rotation
+        // changes, not the resolution).
+        if (PrismWindowPolicy.spatialWindowingActive()
+                && (orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                        || orientation == ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
+                        || orientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                        || orientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR
+                        || orientation == ActivityInfo.SCREEN_ORIENTATION_FULL_USER
+                        || orientation == ActivityInfo.SCREEN_ORIENTATION_LOCKED
+                        || orientation == ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
+                        || orientation == ActivityInfo.SCREEN_ORIENTATION_USER)) {
+            return Surface.ROTATION_90;
         }
 
         int sensorRotation = mOrientationListener != null

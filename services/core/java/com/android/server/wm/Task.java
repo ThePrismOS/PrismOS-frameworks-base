@@ -2068,6 +2068,17 @@ class Task extends TaskFragment {
         }
     }
 
+    @Override
+    void resolveOverrideConfiguration(Configuration newParentConfig) {
+        super.resolveOverrideConfiguration(newParentConfig);
+        // PrismOS: spatial freeform windows present a tablet-scale UI — a reduced density
+        // makes the task layout use tablet resources inside its world-space window.
+        if (PrismWindowPolicy.spatialWindowingActive() && inFreeformWindowingMode()
+                && !isActivityTypeHomeOrRecents()) {
+            getResolvedOverrideConfiguration().densityDpi = 240;
+        }
+    }
+
     void adjustForMinimalTaskDimensions(@NonNull Rect bounds, @NonNull Rect previousBounds,
             @NonNull Configuration parentConfig) {
         int minWidth = mMinWidth;
