@@ -61,6 +61,12 @@ public final class PrismWindowPolicy {
         if (!spatialWindowingActive() || win == null || win.mActivityRecord == null) {
             return false;
         }
+        // PrismOS: home and recents are 2D system chrome, not world windows — tagging them
+        // hands the launcher a spatial slot with a degenerate (camera-hugging) placement
+        // whose plane intercepts every gaze ray as the nearest hit.
+        if (win.mActivityRecord.isActivityTypeHomeOrRecents()) {
+            return false;
+        }
         final LayoutParams attrs = win.mAttrs;
         // PrismOS: transient system dialogs (screenshot flash, screen-recorder toast) must
         // not occupy a world slot — they are momentary 2D overlays, skipped from tagging.
